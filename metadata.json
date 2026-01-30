@@ -1,0 +1,7 @@
+{
+  "name": "ABS Library & Computer",
+  "description": "A modern, responsive e-commerce platform for books, stationery, computer accessories, and repair services.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
