@@ -1,31 +1,44 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+// Standard initialization using environment variable
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const getAIAssistantResponse = async (query: string) => {
+  if (!process.env.API_KEY) {
+    return "দুঃখিত, এআই সার্ভিস কনফিগার করা হয়নি। দয়া করে অ্যাডমিন প্যানেলে চেক করুন।";
+  }
+  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `You are an expert sales assistant for "ABS Library & Computer". We sell books, stationery, and computer parts.
+      contents: `You are an expert sales assistant for "ABS Library & Computer". 
+      Location: Dhaka, Bangladesh.
+      We sell: Books, Stationery, Computer accessories.
+      We provide: Computer repair, Windows setup, Hardware servicing.
       User query: ${query}
-      Provide a helpful, concise response. If they ask about repairs, suggest our "Computer Services" section.`,
+      Response language: Bengali (বাংলা).
+      Provide a helpful, concise, and friendly response.`,
       config: {
-        maxOutputTokens: 200,
+        // Removed maxOutputTokens to prevent potential truncation without thinkingBudget
+        temperature: 0.7,
       }
     });
-    return response.text;
+    // The response.text property directly returns the string output.
+    return response.text || "আমি দুঃখিত, আমি এই মুহূর্তে উত্তর দিতে পারছি না।";
   } catch (error) {
     console.error("AI Error:", error);
-    return "I'm sorry, I'm having trouble connecting to my brain. How can I help you manually?";
+    return "আমি এই মুহূর্তে সংযোগ করতে পারছি না। দয়া করে সরাসরি আমাদের ফোন নম্বরে যোগাযোগ করুন।";
   }
 };
 
 export const getProductRecommendations = async (interests: string) => {
+  if (!process.env.API_KEY) return [];
+  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Suggest 3 categories or items for a user interested in: ${interests}`,
+      contents: `Suggest 3 categories or items for a user interested in: ${interests}. Return JSON array in Bengali.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -36,13 +49,17 @@ export const getProductRecommendations = async (interests: string) => {
               suggestion: { type: Type.STRING },
               reason: { type: Type.STRING }
             },
+            propertyOrdering: ["suggestion", "reason"],
             required: ["suggestion", "reason"]
           }
         }
       }
     });
-    return JSON.parse(response.text || "[]");
+    // Trim and parse the JSON response text
+    let jsonStr = response.text?.trim();
+    return JSON.parse(jsonStr || "[]");
   } catch (error) {
+    console.error("AI Recommendations Error:", error);
     return [];
   }
 };
