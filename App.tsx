@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<'home' | 'shop' | 'services' | 'admin'>('home');
   const [adminTab, setAdminTab] = useState<'inventory' | 'orders'>('inventory');
   
-  // Products State with LocalStorage
+  // Products State with LocalStorage sync
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('abs_products');
@@ -24,7 +24,7 @@ const App: React.FC = () => {
     }
   });
 
-  // Orders State
+  // Orders State with LocalStorage sync
   const [orders, setOrders] = useState<Order[]>(() => {
     try {
       const saved = localStorage.getItem('abs_orders');
@@ -42,7 +42,7 @@ const App: React.FC = () => {
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Admin States
+  // Admin UI States
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginInput, setLoginInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -50,8 +50,7 @@ const App: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditingContact, setIsEditingContact] = useState(false);
 
-  // Business Persistence
-  const [storedPassword] = useState(() => localStorage.getItem('abs_admin_pwd') || 'rdh5050');
+  // Business Settings State
   const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
     try {
       const saved = localStorage.getItem('abs_contact_info');
@@ -68,6 +67,9 @@ const App: React.FC = () => {
       return { phone: '', email: '', address: '', facebookUrl: '', bkashNumber: '', nagadNumber: '', servicesProvided: '' };
     }
   });
+
+  // Password for admin (Default: rdh5050)
+  const ADMIN_PWD = localStorage.getItem('abs_admin_pwd') || 'rdh5050';
 
   useEffect(() => {
     localStorage.setItem('abs_products', JSON.stringify(products));
@@ -114,11 +116,12 @@ const App: React.FC = () => {
   const handleAddOrder = (newOrder: Order) => {
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
+    setIsCheckoutOpen(false);
   };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginInput === storedPassword) {
+    if (loginInput === ADMIN_PWD) {
       setIsLoggedIn(true);
       setLoginInput('');
     } else {
@@ -135,7 +138,7 @@ const App: React.FC = () => {
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditingContact(false);
-    alert('তথ্য সফলভাবে আপডেট করা হয়েছে!');
+    alert('বিজনেস ইনফরমেশন সেভ হয়েছে!');
   };
 
   const handleAiChat = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -168,7 +171,7 @@ const App: React.FC = () => {
                 <h1 className="text-3xl md:text-5xl font-black mb-6 leading-tight">ABS লাইব্রেরি ও কম্পিউটার</h1>
                 <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-xl">পড়াশোনা এবং প্রযুক্তি - আপনার প্রয়োজনীয় সব সমাধান এখন এক ঠিকানায়।</p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button onClick={() => setView('shop')} className="bg-white text-blue-900 px-8 py-3 rounded-xl font-black hover:scale-105 transition shadow-xl">কেনাকাটা শুরু করুন</button>
+                  <button onClick={() => setView('shop')} className="bg-white text-blue-900 px-8 py-3 rounded-xl font-black hover:scale-105 transition shadow-xl">কেনাকাটা করুন</button>
                   <button onClick={() => setView('services')} className="bg-blue-600 border-2 border-blue-400 px-8 py-3 rounded-xl font-black hover:bg-blue-500 transition">সার্ভিসসমূহ</button>
                 </div>
               </div>
@@ -178,14 +181,14 @@ const App: React.FC = () => {
               <div className="max-w-3xl mx-auto px-4">
                 <div className="bg-blue-50 p-6 md:p-10 rounded-[2.5rem] border-2 border-blue-100 shadow-inner">
                   <h3 className="text-xl font-black mb-2 text-blue-900">স্মার্ট সেলস অ্যাসিস্ট্যান্ট</h3>
-                  <p className="text-sm text-blue-700/70 mb-6 font-bold">আমাদের পণ্য বা কম্পিউটার সার্ভিস সম্পর্কে যেকোনো প্রশ্ন করুন।</p>
+                  <p className="text-sm text-blue-700/70 mb-6 font-bold">আমাদের পণ্য বা সার্ভিস সম্পর্কে যেকোনো প্রশ্ন করুন।</p>
                   <form onSubmit={handleAiChat} className="flex flex-col sm:flex-row gap-2">
                     <input name="aiInput" className="flex-1 px-5 py-3 rounded-2xl border-2 focus:border-blue-500 outline-none font-semibold" placeholder="কিভাবে সাহায্য করতে পারি?" />
                     <button type="submit" disabled={isAiLoading} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black hover:bg-blue-700 transition disabled:opacity-50">
                       {isAiLoading ? 'ভাবছি...' : 'জিজ্ঞাসা করুন'}
                     </button>
                   </form>
-                  {aiResponse && <div className="mt-6 p-5 bg-white rounded-2xl border-l-4 border-blue-600 shadow-sm text-gray-700 leading-relaxed font-medium animate-fade-in">{aiResponse}</div>}
+                  {aiResponse && <div className="mt-6 p-5 bg-white rounded-2xl border-l-4 border-blue-600 shadow-sm text-gray-700 leading-relaxed font-medium">{aiResponse}</div>}
                 </div>
               </div>
             </section>
@@ -197,13 +200,13 @@ const App: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-8">
               <aside className="w-full md:w-64">
                 <div className="bg-white p-6 rounded-3xl border shadow-sm sticky top-24">
-                  <h3 className="text-sm font-black mb-4 text-gray-400 uppercase tracking-[0.2em]">ক্যাটাগরি</h3>
+                  <h3 className="text-xs font-black mb-4 text-gray-400 uppercase tracking-widest">ক্যাটাগরি</h3>
                   <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2">
                     {['All', 'Bookstore', 'Stationery', 'Computer Accessories'].map(cat => (
                       <button 
                         key={cat} 
                         onClick={() => setActiveCategory(cat as any)} 
-                        className={`whitespace-nowrap text-left px-4 py-3 rounded-xl text-sm font-bold transition ${activeCategory === cat ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-gray-100 text-gray-600'}`}
+                        className={`whitespace-nowrap text-left px-4 py-3 rounded-xl text-sm font-bold transition ${activeCategory === cat ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'hover:bg-gray-100 text-gray-600'}`}
                       >
                         {cat === 'All' ? 'সবগুলো' : cat === 'Bookstore' ? 'বইঘর' : cat === 'Stationery' ? 'স্টেশনারি' : 'কম্পিউটার পার্টস'}
                       </button>
@@ -271,11 +274,11 @@ const App: React.FC = () => {
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 rounded-3xl border shadow-sm">
                   <div>
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">অ্যাডমিন ড্যাশবোর্ড</h2>
-                    <p className="text-sm font-bold text-gray-500">আপনার শপ ম্যানেজ করুন</p>
+                    <p className="text-sm font-bold text-gray-500">আপনার শপের যাবতীয় তথ্য পরিচালনা করুন</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => setAdminTab('inventory')} className={`px-5 py-2.5 rounded-xl font-bold transition ${adminTab === 'inventory' ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>ইনভেন্টরি</button>
-                    <button onClick={() => setAdminTab('orders')} className={`px-5 py-2.5 rounded-xl font-bold transition ${adminTab === 'orders' ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>অর্ডারসমূহ ({orders.length})</button>
+                    <button onClick={() => setAdminTab('inventory')} className={`px-5 py-2.5 rounded-xl font-bold transition ${adminTab === 'inventory' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 hover:bg-gray-200'}`}>ইনভেন্টরি</button>
+                    <button onClick={() => setAdminTab('orders')} className={`px-5 py-2.5 rounded-xl font-bold transition ${adminTab === 'orders' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 hover:bg-gray-200'}`}>অর্ডারসমূহ ({orders.length})</button>
                     <button onClick={() => setIsEditingContact(true)} className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg flex items-center gap-2">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       সেটিংস
@@ -285,10 +288,10 @@ const App: React.FC = () => {
                 </div>
 
                 {adminTab === 'inventory' ? (
-                  <div className="bg-white rounded-3xl border shadow-sm overflow-hidden animate-fade-in">
-                    <div className="p-6 border-b flex justify-between items-center">
+                  <div className="bg-white rounded-[2rem] border shadow-sm overflow-hidden animate-fade-in">
+                    <div className="p-6 border-b flex justify-between items-center bg-gray-50/50">
                       <h3 className="text-xl font-black text-gray-800">সব প্রোডাক্ট</h3>
-                      <button onClick={() => setIsAddingProduct(true)} className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-700 transition">+ নতুন প্রোডাক্ট</button>
+                      <button onClick={() => setIsAddingProduct(true)} className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-100">+ নতুন প্রোডাক্ট</button>
                     </div>
                     {isAddingProduct && <AddProductForm onAdd={(p) => { setProducts(prev => [p, ...prev]); setIsAddingProduct(false); }} onCancel={() => setIsAddingProduct(false)} />}
                     {editingProduct && <EditProductForm product={editingProduct} onSave={(p) => { setProducts(prev => prev.map(old => old.id === p.id ? p : old)); setEditingProduct(null); }} onCancel={() => setEditingProduct(null)} />}
@@ -304,9 +307,9 @@ const App: React.FC = () => {
                         </thead>
                         <tbody className="divide-y">
                           {products.map(p => (
-                            <tr key={p.id} className="hover:bg-gray-50 transition">
+                            <tr key={p.id} className="hover:bg-blue-50/20 transition">
                               <td className="px-6 py-4 flex items-center gap-3">
-                                <img src={p.image} className="w-10 h-10 rounded-lg object-cover border" alt={p.name} />
+                                <img src={p.image} className="w-12 h-12 rounded-xl object-cover border shadow-sm" alt={p.name} />
                                 <span className="font-bold text-gray-900">{p.name}</span>
                               </td>
                               <td className="px-6 py-4 font-black text-blue-700">৳{p.price}</td>
@@ -314,10 +317,10 @@ const App: React.FC = () => {
                               <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">
                                   <button onClick={() => setEditingProduct(p)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    এডিট
                                   </button>
                                   <button onClick={() => handleDeleteProduct(p.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    ডিলিট
                                   </button>
                                 </div>
                               </td>
@@ -330,33 +333,36 @@ const App: React.FC = () => {
                 ) : (
                   <div className="grid gap-6 animate-fade-in">
                     {orders.length === 0 ? (
-                      <div className="bg-white p-20 text-center rounded-3xl border-2 border-dashed">
-                        <p className="text-gray-400 font-bold text-xl">এখনো কোনো অর্ডার নেই।</p>
+                      <div className="bg-white p-20 text-center rounded-[2rem] border-2 border-dashed">
+                        <p className="text-gray-400 font-bold text-xl">এখনো কোনো অর্ডার আসেনি।</p>
                       </div>
                     ) : (
                       orders.map(order => (
-                        <div key={order.id} className="bg-white p-6 rounded-3xl border shadow-sm flex flex-col md:flex-row justify-between gap-6">
+                        <div key={order.id} className="bg-white p-6 rounded-[2rem] border shadow-sm flex flex-col md:flex-row justify-between gap-6 hover:shadow-md transition">
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase">{order.id}</span>
-                              <span className="text-gray-400 text-xs font-bold">{order.date}</span>
+                              <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-widest">{order.id}</span>
+                              <span className="text-gray-400 text-[10px] font-bold">{order.date}</span>
                             </div>
                             <h4 className="font-black text-xl text-gray-900">{order.customerName}</h4>
-                            <p className="text-sm font-bold text-gray-600">{order.phone}</p>
+                            <p className="text-sm font-bold text-gray-600 flex items-center gap-2">
+                              <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                              {order.phone}
+                            </p>
                             <p className="text-sm font-semibold text-gray-500">{order.address}</p>
-                            {order.transactionId && <span className="text-[10px] font-black bg-pink-50 text-pink-600 px-2 py-1 rounded-md border border-pink-100">TRX: {order.transactionId}</span>}
+                            {order.transactionId && <span className="text-[10px] font-black bg-pink-50 text-pink-600 px-3 py-1 rounded-full border border-pink-100">TRX: {order.transactionId}</span>}
                           </div>
-                          <div className="bg-gray-50 p-4 rounded-2xl md:w-80">
-                            <h5 className="text-[10px] font-black uppercase text-gray-400 mb-2">আইটেমসমূহ</h5>
-                            <ul className="text-xs space-y-2">
+                          <div className="bg-gray-50 p-6 rounded-3xl md:w-80 border shadow-inner">
+                            <h5 className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest">আইটেমসমূহ</h5>
+                            <ul className="text-xs space-y-3">
                               {order.items.map((item, idx) => (
-                                <li key={idx} className="flex justify-between font-bold">
-                                  <span>{item.name} x{item.quantity}</span>
-                                  <span>৳{item.price * item.quantity}</span>
+                                <li key={idx} className="flex justify-between font-bold text-gray-700">
+                                  <span>{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
+                                  <span className="font-black">৳{item.price * item.quantity}</span>
                                 </li>
                               ))}
                             </ul>
-                            <div className="border-t mt-4 pt-4 flex justify-between font-black text-blue-700">
+                            <div className="border-t-2 border-dashed mt-5 pt-4 flex justify-between font-black text-blue-700 text-lg">
                               <span>মোট বিল:</span>
                               <span>৳{order.total}</span>
                             </div>
@@ -374,41 +380,41 @@ const App: React.FC = () => {
 
       {/* Settings Modal */}
       {isEditingContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-8 overflow-y-auto max-h-[90vh] border">
-            <h3 className="text-2xl font-black mb-8 text-gray-800">বিজনেস সেটিংস পরিবর্তন</h3>
-            <form onSubmit={handleSaveContact} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl p-8 md:p-10 overflow-y-auto max-h-[90vh] border">
+            <h3 className="text-2xl font-black mb-8 text-gray-800 uppercase tracking-widest text-center">বিজনেস সেটিংস</h3>
+            <form onSubmit={handleSaveContact} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">ফোন নম্বর</label>
-                  <input className="w-full border-2 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition" value={contactInfo.phone} onChange={e => setContactInfo({...contactInfo, phone: e.target.value})} />
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">ফোন নম্বর</label>
+                  <input className="w-full bg-gray-50 border-2 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 transition font-bold" value={contactInfo.phone} onChange={e => setContactInfo({...contactInfo, phone: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">ইমেইল</label>
-                  <input className="w-full border-2 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition" value={contactInfo.email} onChange={e => setContactInfo({...contactInfo, email: e.target.value})} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-bold text-pink-600 mb-2">বিকাশ (Personal)</label>
-                  <input className="w-full border-2 border-pink-100 bg-pink-50/20 rounded-xl px-4 py-3 outline-none focus:border-pink-500 transition font-bold" value={contactInfo.bkashNumber} onChange={e => setContactInfo({...contactInfo, bkashNumber: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-orange-600 mb-2">নগদ (Personal)</label>
-                  <input className="w-full border-2 border-orange-100 bg-orange-50/20 rounded-xl px-4 py-3 outline-none focus:border-orange-500 transition font-bold" value={contactInfo.nagadNumber} onChange={e => setContactInfo({...contactInfo, nagadNumber: e.target.value})} />
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">ইমেইল</label>
+                  <input className="w-full bg-gray-50 border-2 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 transition font-bold" value={contactInfo.email} onChange={e => setContactInfo({...contactInfo, email: e.target.value})} />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">ঠিকানা</label>
-                <input className="w-full border-2 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition" value={contactInfo.address} onChange={e => setContactInfo({...contactInfo, address: e.target.value})} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-black text-pink-500 uppercase tracking-widest mb-2 ml-1">বিকাশ নম্বর (Personal)</label>
+                  <input className="w-full bg-pink-50/30 border-2 border-pink-100 rounded-2xl px-5 py-4 outline-none focus:border-pink-500 transition font-black text-pink-700" value={contactInfo.bkashNumber} onChange={e => setContactInfo({...contactInfo, bkashNumber: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-orange-500 uppercase tracking-widest mb-2 ml-1">নগদ নম্বর (Personal)</label>
+                  <input className="w-full bg-orange-50/30 border-2 border-orange-100 rounded-2xl px-5 py-4 outline-none focus:border-orange-500 transition font-black text-orange-700" value={contactInfo.nagadNumber} onChange={e => setContactInfo({...contactInfo, nagadNumber: e.target.value})} />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">সার্ভিসসমূহ (তালিকা)</label>
-                <textarea rows={6} className="w-full border-2 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition" value={contactInfo.servicesProvided} onChange={e => setContactInfo({...contactInfo, servicesProvided: e.target.value})} />
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">ঠিকানা</label>
+                <input className="w-full bg-gray-50 border-2 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 transition font-bold" value={contactInfo.address} onChange={e => setContactInfo({...contactInfo, address: e.target.value})} />
               </div>
-              <div className="flex gap-4 pt-4">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition">সেভ করুন</button>
-                <button type="button" onClick={() => setIsEditingContact(false)} className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-200 transition">বাতিল</button>
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">সার্ভিসসমূহ (তালিকা)</label>
+                <textarea rows={5} className="w-full bg-gray-50 border-2 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 transition font-medium text-sm leading-relaxed" value={contactInfo.servicesProvided} onChange={e => setContactInfo({...contactInfo, servicesProvided: e.target.value})} />
+              </div>
+              <div className="flex gap-4 pt-6">
+                <button type="submit" className="flex-1 bg-blue-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl hover:bg-blue-700 transition active:scale-95">সেভ করুন</button>
+                <button type="button" onClick={() => setIsEditingContact(false)} className="flex-1 bg-gray-100 text-gray-700 py-5 rounded-[1.5rem] font-bold hover:bg-gray-200 transition">বাতিল</button>
               </div>
             </form>
           </div>
@@ -416,11 +422,11 @@ const App: React.FC = () => {
       )}
 
       <footer className="bg-gray-900 text-gray-400 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
             <div className="col-span-1 md:col-span-2 space-y-6">
               <h2 className="text-white text-3xl font-black tracking-tighter">ABS <span className="text-blue-500">Library & Computer</span></h2>
-              <p className="max-w-sm mx-auto md:mx-0 text-gray-500 leading-relaxed font-medium">আমরা ২০১০ সাল থেকে নির্ভরযোগ্যতার সাথে বই এবং কম্পিউটার সার্ভিস প্রদান করে আসছি।</p>
+              <p className="max-w-sm mx-auto md:mx-0 text-gray-500 leading-relaxed font-medium">আমরা সততা ও বিশ্বাসের সাথে দীর্ঘ সময় ধরে বই এবং প্রযুক্তিগত সেবা প্রদান করে আসছি।</p>
               <div className="flex gap-4 justify-center md:justify-start">
                 <a href={contactInfo.facebookUrl} target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center hover:scale-110 transition shadow-xl">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
@@ -430,15 +436,15 @@ const App: React.FC = () => {
             <div>
               <h3 className="text-white font-black mb-6 uppercase text-xs tracking-widest">মেনু</h3>
               <ul className="space-y-4 text-sm font-bold">
-                <li><button onClick={() => setView('shop')} className="hover:text-white transition">সব প্রোডাক্ট</button></li>
+                <li><button onClick={() => setView('shop')} className="hover:text-white transition">প্রোডাক্ট লিস্ট</button></li>
                 <li><button onClick={() => setView('services')} className="hover:text-white transition">সার্ভিসসমূহ</button></li>
-                <li><button onClick={() => setView('admin')} className="hover:text-white transition">অ্যাডমিন প্যানেল</button></li>
+                <li><button onClick={() => setView('admin')} className="hover:text-white transition">অ্যাডমিন লগইন</button></li>
               </ul>
             </div>
             <div>
               <h3 className="text-white font-black mb-6 uppercase text-xs tracking-widest">কন্টাক্ট</h3>
               <ul className="space-y-4 text-sm font-bold">
-                <li className="text-gray-300">ফোন: {contactInfo.phone}</li>
+                <li className="text-blue-400">ফোন: {contactInfo.phone}</li>
                 <li className="text-pink-500">বিকাশ: {contactInfo.bkashNumber}</li>
                 <li className="text-orange-500">নগদ: {contactInfo.nagadNumber}</li>
                 <li className="text-gray-500 font-medium">ঠিকানা: {contactInfo.address}</li>

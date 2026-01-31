@@ -7,6 +7,14 @@
     <title>ABS Library & Computer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Shim process.env for browser compatibility to fix the white screen error
+      window.process = { 
+        env: { 
+          API_KEY: "" // This will be populated if injected by the hosting environment
+        } 
+      };
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -29,7 +37,6 @@
 </head>
 <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
-    <!-- This script tag is essential to start the application -->
     <script type="module" src="./index.tsx"></script>
 </body>
 </html>
